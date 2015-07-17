@@ -26,4 +26,6 @@ Options
 - `-m`, `--max`                  Normalize to the maximum (peak) volume instead of RMS
 - `-v`, `--verbose`              Enable verbose output
 - `-n`, `--dry-run`              Show what would be done, do not convert
+- `-b`, `--bitrate`              Audio bitrate in Kilo, default: 320
+- `-o`, `--output_path`          Output path (default: ./)
 

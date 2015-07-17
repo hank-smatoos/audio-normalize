@@ -68,13 +68,13 @@ def ffmpeg_get_mean(input_file):
     return mean_volume, max_volume
 
 
-def ffmpeg_adjust_volume(input_file, gain, output):
+def ffmpeg_adjust_volume(input_file, gain, bitrate, output):
     global args
     if not args.force and os.path.exists(output):
         print("[warning] output file " + output + " already exists, skipping. Use -f to force overwriting.")
         return
 
-    cmd = 'ffmpeg -y -i "' + input_file + '" -vn -sn -filter:a "volume=' + str(gain) + 'dB" -c:a pcm_s16le "' + output + '"'
+    cmd = 'ffmpeg -y -i "' + input_file + '" -c:v copy -filter:a "volume=' + str(gain) + 'dB" -c:a aac -b:a ' + str(bitrate) + 'k -strict experimental "' + output + '"'
     output = run_command(cmd, True, args.dry_run)
 
 
@@ -117,6 +117,8 @@ parser.add_argument('-p', '--prefix', default="normalized", help="Normalized fil
 parser.add_argument('-m', '--max', default=False, action="store_true", help="Normalize to the maximum (peak) volume instead of RMS")
 parser.add_argument('-v', '--verbose', default=False, action="store_true", help="Enable verbose output")
 parser.add_argument('-n', '--dry-run', default=False, action="store_true", help="Show what would be done, do not convert")
+parser.add_argument('-b', '--bitrate', default=320, help="Audio bitrate in Kilo, default: 320")
+parser.add_argument('-o', '--output_path', default="./", help="Output path, default: ./")
 
 args = parser.parse_args()
 
@@ -146,7 +148,13 @@ for input_file in args.input:
     if maximum + adjustment > 0:
         print("[warning] adjusting " + input_file + " will lead to clipping of " + str(maximum + adjustment) + "dB")
 
+    target_bitrate = args.bitrate
+    print_verbose("[info] audio bitrate: " + str(target_bitrate) + "kbps")
+
     path, filename = os.path.split(input_file)
     basename = os.path.splitext(filename)[0]
 
-    ffmpeg_adjust_volume(input_file, adjustment, os.path.join(path, args.prefix + "-" + basename + ".wav"))
+    output_path = args.output_path
+    print_verbose("[info] output path: " + output_path)
+
+    ffmpeg_adjust_volume(input_file, adjustment, target_bitrate, os.path.join(output_path, args.prefix + "-" + basename + ".mp4"))

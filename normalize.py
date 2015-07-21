@@ -111,7 +111,7 @@ parser = argparse.ArgumentParser(
     description="""This program normalizes audio to a certain dB level.
                    The default is an RMS-based normalization where the mean is lifted. Peak normalization is
                    possible with the -m/--max option.
-                   It takes any audio or video file as input, and writes the audio part as output WAV file."""
+                   It takes mp4 files as input, and re-encode audio part and stores as mp4 files."""
     )
 parser.add_argument('-i', '--input', nargs='+', help='Input files to convert', required=True)
 parser.add_argument('-f', '--force', default=False, action="store_true",

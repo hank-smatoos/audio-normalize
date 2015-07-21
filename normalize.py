@@ -30,6 +30,8 @@ import argparse
 import subprocess
 import os
 import re
+import sys
+from glob import glob
 
 args = dict()
 
@@ -49,7 +51,7 @@ def run_command(cmd, raw = False, dry = False):
 
 
 def ffmpeg_get_mean(input_file):
-    cmd = 'ffmpeg -hide_banner -i "' + input_file + '" -filter:a "volumedetect" -vn -sn -f null /dev/null'
+    cmd = 'ffmpeg -hide_banner -i "' + input_file + '" -filter:a "volumedetect" -vn -sn -f null NUL'
     output = run_command(cmd, True)
     mean_volume_matches = re.findall(r"mean_volume: ([\-\d\.]+) dB", output)
     if (mean_volume_matches):
@@ -85,6 +87,8 @@ def print_verbose(message):
 
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
+    if sys.platform == "win32" and not program.endswith(".exe"): program += ".exe"
+
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
@@ -126,7 +130,13 @@ if not which("ffmpeg"):
     print("[error] ffmpeg could not be found in your PATH")
     raise SystemExit
 
-for input_file in args.input:
+input_files = list()
+for arg in args.input:  
+    input_files += glob(arg)
+
+for input_file in input_files: print(input_file)
+
+for input_file in input_files:
     if not os.path.exists(input_file):
         print("[error] file " + input_file + " does not exist")
         continue

@@ -9,7 +9,7 @@ Requirements
 
 * Python 2.7.1 (https://www.python.org/downloads/release/python-2710/)
 * Recent version of ffmpeg (download a [static build](http://ffmpeg.zeranoe.com/builds/) if you don't want to compile) in your `$PATH`
-** how to the $PATH in Windows => http://www.computerhope.com/issues/ch000549.htm
+  * how to the $PATH in Windows => http://www.computerhope.com/issues/ch000549.htm
 
 Usage
 =====

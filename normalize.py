@@ -30,6 +30,8 @@ import argparse
 import subprocess
 import os
 import re
+import sys
+from glob import glob
 
 args = dict()
 
@@ -49,7 +51,7 @@ def run_command(cmd, raw = False, dry = False):
 
 
 def ffmpeg_get_mean(input_file):
-    cmd = 'ffmpeg -hide_banner -i "' + input_file + '" -filter:a "volumedetect" -vn -sn -f null /dev/null'
+    cmd = 'ffmpeg -hide_banner -i "' + input_file + '" -filter:a "volumedetect" -vn -sn -f null NUL'
     output = run_command(cmd, True)
     mean_volume_matches = re.findall(r"mean_volume: ([\-\d\.]+) dB", output)
     if (mean_volume_matches):
@@ -85,6 +87,8 @@ def print_verbose(message):
 
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
+    if sys.platform == "win32" and not program.endswith(".exe"): program += ".exe"
+
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
@@ -118,7 +122,8 @@ parser.add_argument('-m', '--max', default=False, action="store_true", help="Nor
 parser.add_argument('-v', '--verbose', default=False, action="store_true", help="Enable verbose output")
 parser.add_argument('-n', '--dry-run', default=False, action="store_true", help="Show what would be done, do not convert")
 parser.add_argument('-b', '--bitrate', default=320, help="Audio bitrate in Kilo, default: 320")
-parser.add_argument('-o', '--output_path', default="./", help="Output path, default: ./")
+parser.add_argument('-o', '--output-path', default="./", help="Output path, default: ./")
+parser.add_argument('-r', '--read-only', default=False, action="store_true", help="Show the current audio level, do not convert")
 
 args = parser.parse_args()
 
@@ -126,7 +131,13 @@ if not which("ffmpeg"):
     print("[error] ffmpeg could not be found in your PATH")
     raise SystemExit
 
-for input_file in args.input:
+input_files = list()
+for arg in args.input:  
+    input_files += glob(arg)
+
+for input_file in input_files: print(input_file)
+
+for input_file in input_files:
     if not os.path.exists(input_file):
         print("[error] file " + input_file + " does not exist")
         continue
@@ -147,6 +158,9 @@ for input_file in args.input:
 
     if maximum + adjustment > 0:
         print("[warning] adjusting " + input_file + " will lead to clipping of " + str(maximum + adjustment) + "dB")
+
+    if args.read_only:
+        continue
 
     target_bitrate = args.bitrate
     print_verbose("[info] audio bitrate: " + str(target_bitrate) + "kbps")

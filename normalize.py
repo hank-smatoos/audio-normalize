@@ -117,7 +117,7 @@ parser.add_argument('-i', '--input', nargs='+', help='Input files to convert', r
 parser.add_argument('-f', '--force', default=False, action="store_true",
                     help='Force overwriting existing files')
 parser.add_argument('-l', '--level', default=-26, help="dB level to normalize to, default: -26 dB")
-parser.add_argument('-p', '--prefix', default="normalized", help="Normalized file prefix, default: normalized")
+parser.add_argument('-p', '--prefix', default="normalized", help="Normalized file prefix")
 parser.add_argument('-m', '--max', default=False, action="store_true", help="Normalize to the maximum (peak) volume instead of RMS")
 parser.add_argument('-v', '--verbose', default=False, action="store_true", help="Enable verbose output")
 parser.add_argument('-n', '--dry-run', default=False, action="store_true", help="Show what would be done, do not convert")
@@ -168,7 +168,10 @@ for input_file in input_files:
     path, filename = os.path.split(input_file)
     basename = os.path.splitext(filename)[0]
 
-    output_path = args.output_path
-    print_verbose("[info] output path: " + output_path)
+    if args.prefix:
+        basename = args.prefix + "_" + basename
 
-    ffmpeg_adjust_volume(input_file, adjustment, target_bitrate, os.path.join(output_path, args.prefix + "-" + basename + ".mp4"))
+    output_file = os.path.join(args.output_path, basename + ".mp4")
+    print_verbose("[info] output path: " + output_file)
+
+    ffmpeg_adjust_volume(input_file, adjustment, target_bitrate, output_file)
